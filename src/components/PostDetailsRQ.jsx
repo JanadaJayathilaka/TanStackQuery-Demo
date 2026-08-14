@@ -19,7 +19,7 @@ const PostDetailsRQ = () => {
     const { title, body } = data?.data || {}
 
     if (isLoading) {
-        return <p className="text-center text-gray-500">Chargement...</p>
+        return <p className="text-center text-gray-500">Loading...</p>
     }
     if (isError) {
         return <p className="text-center text-red-500">{error.message}</p>

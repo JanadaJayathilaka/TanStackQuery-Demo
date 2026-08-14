@@ -25,10 +25,10 @@ function PostsTrad() {
     }, [])
 
     if (isLoading) {
-        return <p className="text-center text-gray-500">Chargement...</p>
+        return <p className="text-center text-gray-500">Loading...</p>
     }
     if (isError) {
-        return <p className="text-center text-red-500">Erreur de chargement</p>
+        return <p className="text-center text-red-500">Error while fetching posts</p>
     }
 
 
@@ -36,9 +36,9 @@ function PostsTrad() {
         <div>
             <h1 className="text-2xl font-bold mb-4">Posts Tradicionnels</h1>
 
-            {isLoading && <p className="text-center text-gray-500">Chargement...</p>}
+            {isLoading && <p className="text-center text-gray-500">Loading...</p>}
 
-            {isError && <p className="text-center text-red-500">Erreur de chargement</p>}
+            {isError && <p className="text-center text-red-500">Error while fetching posts</p>}
 
             {posts && (
                 <ul className="space-y-2">

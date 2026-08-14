@@ -27,14 +27,33 @@ const PostsRQ = () => {
     })
     const { mutate: addPostMutation } = useMutation({
         mutationFn: addPost,
-        onSuccess: (newData) => {
-            // queryClient.invalidateQueries("posts")
+        // onSuccess: (newData) => {
+        //     // queryClient.invalidateQueries("posts")
+        //     queryClient.setQueryData(["posts"], (oldQueryData) => {
+        //         return {
+        //             ...oldQueryData,
+        //             data: [...oldQueryData.data, newData.data]
+        //         }
+        //     })
+        // }
+
+        onMutate: async (newPost) => {
+            await queryClient.cancelQueries(["posts"])
+            const oldQueryData = queryClient.getQueryData(["posts"])
+
             queryClient.setQueryData(["posts"], (oldQueryData) => {
                 return {
                     ...oldQueryData,
-                    data: [...oldQueryData.data, newData.data]
+                    data: [...oldQueryData.data, { ...newPost, id: String(oldQueryData?.data?.length + 1) }]
                 }
             })
+            return oldQueryData
+        },
+        onError: (_err, _post, context) => {
+            queryClient.setQueryData(["posts"], context.oldQueryData)
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries(["posts"])
         }
 
     })

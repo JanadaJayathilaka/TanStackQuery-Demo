@@ -1,26 +1,38 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
+import { useInfiniteQuery } from "@tanstack/react-query"
 import axios from "axios"
+import { useEffect } from "react"
+import { useInView } from "react-intersection-observer"
 
-
-const fetchFruits = ({ pageParam }) => {
-    return axios.get(`http://localhost:4000/fruits?_page=${pageParam}&_per_page=4`)
+const fetchFruits = async ({ pageParam = 1 }) => {
+    const response = await axios.get(`http://localhost:4000/fruits?_page=${pageParam}&_per_page=10`)
+    return response.data
 }
 
 const InfiniteQueries = () => {
-    const { data, isLoading, isError, error, fetchNextPage, hasNextPage } = useInfiniteQuery({
+    const { 
+        data, 
+        isLoading, 
+        isError, 
+        error, 
+        fetchNextPage, 
+        hasNextPage, 
+        isFetchingNextPage 
+    } = useInfiniteQuery({
         queryKey: ["fruits"],
         queryFn: fetchFruits,
         initialPageParam: 1,
-        getNextPageParam: (_lastPage, allPages) => {
-            if (allPages.length < 5) {
-                return allPages.length + 1
-            } else {
-                return undefined
-            }
+        getNextPageParam: (lastPage) => {
+            return lastPage.next ?? undefined
         }
     })
 
-    console.log(data)
+    const { ref, inView } = useInView({})
+
+    useEffect(() => {
+        if (inView && hasNextPage) {
+            fetchNextPage()
+        }
+    }, [fetchNextPage, inView, hasNextPage])
 
     if (isLoading) {
         return <h2>Page is Loading...</h2>
@@ -31,14 +43,18 @@ const InfiniteQueries = () => {
     }
 
     return (
-        <div>
+        <div className="container">
             <h1>InfiniteQueries</h1>
-            {data?.pages?.map(page => (
-                page.data?.data.map(fruit => (
-                    <div key={fruit.id} className='fruit-item'>{fruit.name}</div>
+            {data?.pages?.map((page) => (
+                page.data.map((fruit) => (
+                    <div key={fruit.id} className="fruit-item">{fruit.name}</div>
                 ))
             ))}
-            <button disabled={!hasNextPage} onClick={() => fetchNextPage()}>Fetch Next Page</button>
+
+            <div ref={ref} style={{ padding: "20px", textAlign: "center" }}>
+                {isFetchingNextPage && <p>Loading more fruits...</p>}
+                {!hasNextPage && <p>You have reached the end!</p>}
+            </div>
         </div>
     )
 }
